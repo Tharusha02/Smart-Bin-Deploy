@@ -28,6 +28,7 @@ class PredictPipeline:
         Returns:
             str: The predicted waste class.
         """
+        print("in the predict pipeline")
         try:
             # Validate the input file
             if not image_file:
