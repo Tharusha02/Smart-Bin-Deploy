@@ -21,6 +21,7 @@ class PredictPipeline:
         self.output_details = self.interpreter.get_output_details()
 
     def predict_waste_type(self, image_file):
+        print("in prediction pipeline")
         """
         Predicts the waste type for a given image file.
 
