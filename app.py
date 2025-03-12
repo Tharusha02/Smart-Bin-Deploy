@@ -4,6 +4,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from src.pipeline.predict_pipeline import PredictPipeline
 import os
+import tensorflow as tf
+print("Available devices:", tf.config.list_physical_devices())  # Should show only CPU
+
 
 # Initialize Flask app
 app = Flask(__name__)
