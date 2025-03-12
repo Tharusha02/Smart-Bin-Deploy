@@ -16,39 +16,32 @@ class_labels = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
 
 class PredictPipeline:
     def __init__(self):
-        pass
+        self.model = None
+
+    def load_model(self):
+        if self.model is None:
+            MODEL_PATH = os.getenv("MODEL_PATH", "./artifacts/waste_classification_model.keras")
+            self.model = tf.keras.models.load_model(MODEL_PATH)
 
     def predict_waste_type(self, image_file):
-        """
-        Predicts the waste type for a given image file.
-
-        Args:
-            image_file: A file-like object containing the image data.
-
-        Returns:
-            str: The predicted waste class.
-        """
-        print("in the predict pipeline")
         try:
-            # Validate the input file
-            if not image_file:
-                raise ValueError("No image file provided.")
+            # Lazy load the model
+            if self.model is None:
+                self.load_model()
 
-            # Read and preprocess the image
+            # Preprocess the image
             img = Image.open(io.BytesIO(image_file.read()))
-            img = img.convert("RGB")  # Ensure the image is in RGB format (remove alpha channel)
-            img = img.resize((224, 224))  # Resize to model input size
-            img_array = np.array(img) / 255.0  # Normalize pixel values
-            img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+            img = img.convert("RGB").resize((224, 224))
+            img_array = np.array(img) / 255.0
+            img_array = np.expand_dims(img_array, axis=0)
 
             # Predict
-            predictions = model.predict(img_array)
+            predictions = self.model.predict(img_array)
             predicted_index = np.argmax(predictions, axis=1)[0]
             predicted_class = class_labels[predicted_index]
 
             return predicted_class
 
         except Exception as e:
-            # Log the error and re-raise it
             print(f"Prediction failed: {str(e)}")
             raise ValueError("Failed to process the image. Please ensure the file is a valid image.")
