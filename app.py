@@ -13,6 +13,7 @@ DEFAULT_DATASET_PATH = "./notebook/Data/Waste_dataset"
 # Prediction endpoint
 @app.route("/predict", methods=["POST"])
 def predict():
+    print("prediction started")
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
 
