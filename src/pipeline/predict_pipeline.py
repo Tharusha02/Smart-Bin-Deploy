@@ -1,6 +1,6 @@
-# prediction_pipeline.py
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Disable GPU
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Suppress TensorFlow warnings
 
 import tensorflow as tf
 import numpy as np
@@ -8,8 +8,8 @@ from PIL import Image
 import io
 
 # Load the trained model (ensure the path is correct)
-model_path = "./artifacts/waste_classification_model.keras"
-model = tf.keras.models.load_model(model_path)
+MODEL_PATH = os.getenv("MODEL_PATH", "./artifacts/waste_classification_model.keras")
+model = tf.keras.models.load_model(MODEL_PATH)
 
 # Define class labels
 class_labels = ['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
@@ -29,6 +29,10 @@ class PredictPipeline:
             str: The predicted waste class.
         """
         try:
+            # Validate the input file
+            if not image_file:
+                raise ValueError("No image file provided.")
+
             # Read and preprocess the image
             img = Image.open(io.BytesIO(image_file.read()))
             img = img.convert("RGB")  # Ensure the image is in RGB format (remove alpha channel)
@@ -44,4 +48,6 @@ class PredictPipeline:
             return predicted_class
 
         except Exception as e:
-            raise ValueError(f"Prediction failed: {str(e)}")
+            # Log the error and re-raise it
+            print(f"Prediction failed: {str(e)}")
+            raise ValueError("Failed to process the image. Please ensure the file is a valid image.")

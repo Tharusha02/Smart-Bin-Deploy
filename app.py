@@ -1,12 +1,7 @@
-# app.py
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from src.pipeline.predict_pipeline import PredictPipeline
 import os
-import tensorflow as tf
-print("Available devices:", tf.config.list_physical_devices())  # Should show only CPU
-
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -26,7 +21,9 @@ def predict():
         return jsonify({"error": "No selected file"}), 400
 
     try:
+        # Initialize the prediction pipeline
         predict_pipeline = PredictPipeline()
+
         # Call the prediction function
         predicted_class = predict_pipeline.predict_waste_type(file)
 
@@ -34,8 +31,15 @@ def predict():
         return jsonify({"predicted_class": predicted_class})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # Log the error and return a user-friendly message
+        app.logger.error(f"Prediction failed: {str(e)}")
+        return jsonify({"error": "An error occurred during prediction. Please try again."}), 500
 
 # Run the app
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=True)
+    # Use environment variables for configuration
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000)),
+        debug=os.getenv("FLASK_ENV") == "development"
+    )
